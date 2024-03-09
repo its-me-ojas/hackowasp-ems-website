@@ -1,6 +1,6 @@
-// App.js
 import React, { useEffect, useState } from "react";
 import { getAllTeams, getAllMembers } from "./services/api";
+import * as XLSX from "xlsx";
 
 function App() {
   const [teams, setTeams] = useState([]);
@@ -26,9 +26,31 @@ function App() {
       });
   }, []);
 
+  const handleDownloadExcel = () => {
+    const wsTeams = XLSX.utils.json_to_sheet(teams);
+    const wsMembers = XLSX.utils.json_to_sheet(members);
+    const wb = XLSX.utils.book_new();
+    XLSX.utils.book_append_sheet(wb, wsTeams, "Teams");
+    XLSX.utils.book_append_sheet(wb, wsMembers, "Members");
+    XLSX.writeFile(wb, "team_and_member_data.xlsx");
+  };
+
   return (
     <div className="App ">
       <h1>Team and Member Data</h1>
+      <button
+        onClick={handleDownloadExcel}
+        style={{
+          padding: "10px 20px",
+          backgroundColor: "#4CAF50",
+          color: "white",
+          border: "none",
+          borderRadius: "4px",
+          cursor: "pointer",
+        }}
+      >
+        Download Excel File
+      </button>{" "}
       <h2>Teams:</h2>
       <table style={{ marginBottom: "20px" }}>
         <thead style={{ backgroundColor: "#f2f2f2" }}>
