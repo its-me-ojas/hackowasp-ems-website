@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const api = axios.create({
-  baseURL: "https://goprog.crestfallen.tech",
+  baseURL: "https://hackowasp.crestfallen.tech",
 });
 
 export const getAllTeams = () => api.get("/teamAll");
