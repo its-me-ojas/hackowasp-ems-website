@@ -11,6 +11,7 @@ function App() {
     getAllTeams()
       .then((response) => {
         setTeams(response.data);
+        console.log(response.data);
       })
       .catch((error) => {
         console.error("Error fetching teams:", error);
@@ -20,6 +21,7 @@ function App() {
     getAllMembers()
       .then((response) => {
         setMembers(response.data);
+        console.log(response.data);
       })
       .catch((error) => {
         console.error("Error fetching members:", error);
@@ -122,11 +124,21 @@ function App() {
                 {member.memberRoll}
               </td>
               <td style={{ padding: "10px", textAlign: "center" }}>
-                {/* // TODO: Add team name here */}
+                {teams.map((team) => {
+                  if (team.id === member.teamID) {
+                    return team.teamName;
+                  }
+                  return null;
+                })}
               </td>
               <td style={{ padding: "10px", textAlign: "center" }}>
                 {/* // TODO Add team college here */}
-                {}
+                {teams.map((team) => {
+                  if (team.id === member.teamID) {
+                    return team.college;
+                  }
+                  return null;
+                })}
               </td>
             </tr>
           ))}
