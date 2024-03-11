@@ -1,10 +1,16 @@
 import React, { useEffect, useState } from "react";
 import { getAllTeams, getAllMembers } from "./services/api";
 import * as XLSX from "xlsx";
+import "./App.css"; // Import your CSS file for additional styling
 
 function App() {
   const [teams, setTeams] = useState([]);
   const [members, setMembers] = useState([]);
+  const [currentTeamPage, setCurrentTeamPage] = useState(1);
+  const [currentMemberPage, setCurrentMemberPage] = useState(1);
+  const [itemsPerPage] = useState(5); // Change this to set the number of items per page
+  const [teamSearch, setTeamSearch] = useState("");
+  const [memberSearch, setMemberSearch] = useState("");
 
   useEffect(() => {
     // Fetch all teams and set state
@@ -37,93 +43,112 @@ function App() {
     XLSX.writeFile(wb, "team_and_member_data.xlsx");
   };
 
+  const indexOfLastTeam = currentTeamPage * itemsPerPage;
+  const indexOfFirstTeam = indexOfLastTeam - itemsPerPage;
+  const filteredTeams = teams.filter((team) =>
+    Object.values(team).some(
+      (value) =>
+        typeof value === "string" &&
+        value.toLowerCase().includes(teamSearch.toLowerCase())
+    )
+  );
+  const currentTeams = filteredTeams.slice(indexOfFirstTeam, indexOfLastTeam);
+
+  const indexOfLastMember = currentMemberPage * itemsPerPage;
+  const indexOfFirstMember = indexOfLastMember - itemsPerPage;
+  const filteredMembers = members.filter((member) =>
+    Object.values(member).some(
+      (value) =>
+        typeof value === "string" &&
+        value.toLowerCase().includes(memberSearch.toLowerCase())
+    )
+  );
+  const currentMembers = filteredMembers.slice(
+    indexOfFirstMember,
+    indexOfLastMember
+  );
+
+  const paginateTeams = (pageNumber) => setCurrentTeamPage(pageNumber);
+  const paginateMembers = (pageNumber) => setCurrentMemberPage(pageNumber);
+
   return (
-    <div className="App ">
+    <div className="App">
       <h1>Team and Member Data</h1>
-      <button
-        onClick={handleDownloadExcel}
-        style={{
-          padding: "10px 20px",
-          backgroundColor: "#4CAF50",
-          color: "white",
-          border: "none",
-          borderRadius: "4px",
-          cursor: "pointer",
-        }}
-      >
+      <button onClick={handleDownloadExcel} className="download-btn">
         Download Excel File
       </button>{" "}
+      <div className="search-box">
+        <input
+          type="text"
+          placeholder="Search teams"
+          value={teamSearch}
+          onChange={(e) => setTeamSearch(e.target.value)}
+        />
+      </div>
       <h2>Teams:</h2>
-      <table style={{ marginBottom: "20px" }}>
-        <thead style={{ backgroundColor: "#f2f2f2" }}>
+      <table className="table">
+        <thead>
           <tr>
-            <th style={{ padding: "10px", textAlign: "center" }}>Team Name</th>
-            <th style={{ padding: "10px", textAlign: "center" }}>College</th>
-            <th style={{ padding: "10px", textAlign: "center" }}>
-              Leader Email
-            </th>
-            <th style={{ padding: "10px", textAlign: "center" }}>
-              Number of Members
-            </th>
+            <th>Team Name</th>
+            <th>College</th>
+            <th>Leader Email</th>
+            <th>Number of Members</th>
           </tr>
         </thead>
-        <tbody style={{ borderTop: "2px solid #ccc" }}>
-          {teams.map((team) => (
-            <tr key={team.id} style={{ background: "color" }}>
-              <td style={{ padding: "10px", textAlign: "center" }}>
-                {team.teamName}
-              </td>
-              <td style={{ padding: "10px", textAlign: "center" }}>
-                {team.college}
-              </td>
-              <td style={{ padding: "10px", textAlign: "center" }}>
-                {team.leaderEmail}
-              </td>
-              <td style={{ padding: "10px", textAlign: "center" }}>
-                {team.members.length}
-              </td>
+        <tbody>
+          {currentTeams.map((team) => (
+            <tr key={team.id}>
+              <td>{team.teamName}</td>
+              <td>{team.college}</td>
+              <td>{team.leaderEmail}</td>
+              <td>{team.members.length}</td>
             </tr>
           ))}
         </tbody>
       </table>
+      <div className="pagination">
+        <ul>
+          {Array.from({
+            length: Math.ceil(filteredTeams.length / itemsPerPage),
+          }).map((_, index) => (
+            <li
+              key={index}
+              className={index + 1 === currentTeamPage ? "active" : ""}
+              onClick={() => paginateTeams(index + 1)}
+            >
+              {index + 1}
+            </li>
+          ))}
+        </ul>
+      </div>
+      <div className="search-box">
+        <input
+          type="text"
+          placeholder="Search members"
+          value={memberSearch}
+          onChange={(e) => setMemberSearch(e.target.value)}
+        />
+      </div>
       <h2>Members:</h2>
-      <table style={{ marginBottom: "20px" }}>
-        <thead style={{ backgroundColor: "#f2f2f2" }}>
+      <table className="table">
+        <thead>
           <tr>
-            <th style={{ padding: "10px", textAlign: "center" }}>
-              Member Name
-            </th>
-            <th style={{ padding: "10px", textAlign: "center" }}>
-              Member Email
-            </th>
-            <th style={{ padding: "10px", textAlign: "center" }}>
-              Member Phone
-            </th>
-            <th style={{ padding: "10px", textAlign: "center" }}>
-              Member Roll
-            </th>
-            <th style={{ padding: "10px", textAlign: "center" }}>Team Name</th>
-            <th style={{ padding: "10px", textAlign: "center" }}>
-              Team College
-            </th>
+            <th>Member Name</th>
+            <th>Member Email</th>
+            <th>Member Phone</th>
+            <th>Member Roll</th>
+            <th>Team Name</th>
+            <th>Team College</th>
           </tr>
         </thead>
-        <tbody style={{ borderTop: "2px solid #ccc" }}>
-          {members.map((member) => (
-            <tr key={member.id} style={{ background: "color" }}>
-              <td style={{ padding: "10px", textAlign: "center" }}>
-                {member.memberName}
-              </td>
-              <td style={{ padding: "10px", textAlign: "center" }}>
-                {member.memberEmail}
-              </td>
-              <td style={{ padding: "10px", textAlign: "center" }}>
-                {member.memberPhone}
-              </td>
-              <td style={{ padding: "10px", textAlign: "center" }}>
-                {member.memberRoll}
-              </td>
-              <td style={{ padding: "10px", textAlign: "center" }}>
+        <tbody>
+          {currentMembers.map((member) => (
+            <tr key={member.id}>
+              <td>{member.memberName}</td>
+              <td>{member.memberEmail}</td>
+              <td>{member.memberPhone}</td>
+              <td>{member.memberRoll}</td>
+              <td>
                 {teams.map((team) => {
                   if (team.id === member.teamID) {
                     return team.teamName;
@@ -131,8 +156,7 @@ function App() {
                   return null;
                 })}
               </td>
-              <td style={{ padding: "10px", textAlign: "center" }}>
-                {/* // TODO Add team college here */}
+              <td>
                 {teams.map((team) => {
                   if (team.id === member.teamID) {
                     return team.college;
@@ -144,6 +168,21 @@ function App() {
           ))}
         </tbody>
       </table>
+      <div className="pagination">
+        <ul>
+          {Array.from({
+            length: Math.ceil(filteredMembers.length / itemsPerPage),
+          }).map((_, index) => (
+            <li
+              key={index}
+              className={index + 1 === currentMemberPage ? "active" : ""}
+              onClick={() => paginateMembers(index + 1)}
+            >
+              {index + 1}
+            </li>
+          ))}
+        </ul>
+      </div>
     </div>
   );
 }
